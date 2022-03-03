@@ -1,3 +1,3 @@
 # R-to-Data-Science
 
-Assignment Codes for Itroduction to R applied 
+Assignment Codes for Introduction to R applied in Data Science
