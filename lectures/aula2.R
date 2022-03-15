@@ -221,13 +221,19 @@ colMeans(matriz_a)
 #     | 3  -1 2  |        | 0  4  8 |
 #     | 6  -2 3  |        | 5  5  1 |
 
-
+A <- matrix(c(1,3,6,2,-1,-2,4,2,3), nrow = 3, ncol= 3)
+A
+B <- matrix(c(3,0,5,5,4,5,7,8,1), nrow = 3, ncol = 3)
+B
 
 # crie as matrizes A e B e realize as seguintes operações:
   
 # a) A+B
+A+B
 # b) A-B
+A-B
 # c) A*B
+A%*%B
 
 
 #### cuidado com o *  não é produto matricial 
@@ -317,9 +323,12 @@ resultado[1,2]  # linha coluna
 
 # Crie três vetores e depois "una" os três em um mesmo data frame. 
 # por exemplo, últimas disciplinas cursadas, nome do professor, nota.
+materia = c("Probabilidade", "EDO", "Análise Real")
+professor = c("Paulo Cezar", "Bebel", "Paulo Sad")
+nota = c(8.2,8.5,8.5)
 
-
-
+materias = data.frame(materia, professor, nota)
+materias
 ##### fique atento
 
 #### NaN quer dizer “Not a number”, ele aparece quando o resultado
@@ -344,16 +353,14 @@ resultado[1,2]  # linha coluna
 # A principal fonte de pacotes R é o CRAN (The Comprehensive R Archive Network)
 # Comunidade de desenvolvedores que mantem o R e os pacotes "oficiais".
 
-
+install.packages("usethis")
+library(usethis)
 install.packages("devtools")
 
 #### chamando um pacote
 
 
 library(devtools)
-
-install_github("silvadenisson/electionsBR")
-
 
 ##### alguns usuários relataram problema com o install_github
 
@@ -374,7 +381,7 @@ githubinstall("silvadenisson/electionsBR")
 # importante pacote
 
 install.packages("sos")
-
+install.packages("library:utils")
 
 
 # chamando / abrindo o pacote 
