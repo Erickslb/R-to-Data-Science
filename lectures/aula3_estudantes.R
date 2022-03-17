@@ -438,6 +438,10 @@ df <- data.frame(Nome = c("André", "Antônio", "Bernardo","Bruna", "Camila", "D
                  Massa = c(76,98,83,48,55,69,99),
                  stringsAsFactors = FALSE)
 
+df[df["Sexo"]=="F","Sexo"] <- "O"
+df[df["Sexo"]=="M","Sexo"] <- "F"
+df[df["Sexo"]=="O","Sexo"] <- "M"
+
 df[["IMC"]] <- with(df,Massa/(Altura/100)^2)
 df
 ### missão
