@@ -1,29 +1,3 @@
-
-
-# Exercício 1
-# Crie o Data.Frame abaixo, inverta o gênero e crie uma nova coluna com o IMC
-# Nome        Idade  Sexo  Altura  Massa
-# André        23     F     165    76
-# Antônio      35     F     177    98
-# Bernardo     38     F     181    83
-# Bruna        24     M     154    48
-# Camila       23     M     160    55
-# Daniel       21     F     175    69 
-# Wilson       65     F     183    99 
-
-
-
-
-
-# Exercício 2
-
-# No dataframe resultado criar a coluna quanto falta.
-
-### quanto falta? O estudante precisa alcançar 14 nas duas avaliações. 
-# Crie uma coluna indicando quanto o estudante deve tirar na segunda
-# avaliação. 
-
-
 #manipulação de dados
 
 # Referências 
@@ -36,7 +10,7 @@ getwd()  #n diretório onde o R está lendo
 
 # RSTUDIO preferences - general - folder
 
-setwd("/Users/professorrobaina/Google Drive/2022/fgv_R/") # mudar o diretório
+setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/R-to-Data-Science/lectures") # mudar o diretório
 ## no Mac... cuidado com este passo a passo
 
 getwd()
@@ -45,8 +19,10 @@ getwd()
 ### O método mais comum de importação de dados para o 
 ### R, é utilizando a função read.table()
 
-dados <- read.table("dados_aula_4.csv", header = TRUE,
+dados <- read.table("lec-data/dados_aula_4.csv", header = TRUE,
                     sep = ";", dec = ",")
+head(dados)
+
 ## Argumentos:
   
 ##  "dados_aula_4.csv": nome do arquivo
@@ -58,27 +34,25 @@ dados <- read.table("dados_aula_4.csv", header = TRUE,
 
 
 
-
 ## o comando acima pode ser substituído por
 
-dados_dois <- read.csv2("dados_aula_4.csv")
+dados_dois <- read.csv2("lec-data/dados_aula_4.csv")
 
 str(dados_dois)
 
 
 
-file.info("dados_aula_4.csv")# mostra o tamanho do arquivo, data de criação, …
+file.info("lec-data/dados_aula_4.csv")# mostra o tamanho do arquivo, data de criação, …
 
 
 
 dir()  # mostra todos os arquivos presentes em um diretório 
 
-file.exists("dados_aula_4.csv") # retorna TRUE ou FALSE para a presença de um arquivo
+file.exists("lec-data/dados_aula_4.csv") # retorna TRUE ou FALSE para a presença de um arquivo
 
 # Removendo um objeto. Serve para coluna.. vetor..
  
 rm(dados_dois)
-
 
 
 ## Vamos ler dados do Excel?
@@ -89,9 +63,8 @@ install.packages("gdata")
 library(gdata)
 
 ## Leitura diretamente do Excel
-dados.xls <- read.xls("dados_aula_4.xls", sheet = "Plan1",
+dados_xls <- read.xls("lec-data/dados_aula_4.xls", sheet = "Plan1",
                       header = TRUE, dec = ",")
-
 
 #### leitura com pacote "mais específico" e adequado ao Windows
 
@@ -101,12 +74,13 @@ install.packages("readxl")
 library(readxl)
 
 ## Leitura diretamente do Excel
-dados.xls <- read_excel("dados_aula_4.xls", sheet = "Plan1",
+dados.xls <- read_excel("lec-data/dados_aula_4.xls", sheet = "Plan1",
                        col_names=TRUE)
 
 ?read_excel
 ## Estrutura
 str(dados.xls)
+rm(dados.xls)
 
 ## listar o que já possuímos 
 
@@ -133,6 +107,7 @@ data()
 data(package = .packages(all.available = TRUE))
 
 #### outros pacotes... como utilizar 
+install.packages("babynames")
 library(babynames)
 
 data("babynames")
@@ -149,7 +124,7 @@ data("mtcars")
 str(mtcars)
 
 
-write.table(mtcars, file = "mtcars.csv")
+write.table(mtcars, file = "lec-data/mtcars.csv")
 
 dir()
 
@@ -161,10 +136,10 @@ ls()
 # Quer alterar?
 
 
-write.table(mtcars, file = "mtcarsdois.csv", row.names = TRUE,
+write.table(mtcars, file = "lec-data/mtcarsdois.csv", row.names = TRUE,
             sep = ";", dec = ",")
 
-write.table(mtcars, file = "mtcarstres.csv", row.names = FALSE,
+write.table(mtcars, file = "lec-data/mtcarstres.csv", row.names = FALSE,
             sep = ";", dec = ",")
 
 
@@ -265,7 +240,7 @@ pie(table(titanic$sex))
 
 ### exemplo muito bom 
 ### Fonte Estatística Básica-W. Bussab e P. Morettin
-funcionarios <- read.table("milsa.txt", head = T)
+funcionarios <- read.table("lec-data/milsa.txt", head = T)
 
 funcionarios
 
@@ -362,23 +337,21 @@ names(filhos.table)[filhos.table == max(filhos.table)] #### moda
 
 ### mediana? Primeiro temos que matar os NA's
 
- median(filhos, na.rm = T)
+median(filhos, na.rm = T)
 
 
 ### média simples
 
- mean(filhos, na.rm = T)
-
-
+mean(filhos, na.rm = T)
 
 ### média com extração dos extremos 
 
- mean(filhos, trim = 0.1, na.rm = T)
+mean(filhos, trim = 0.1, na.rm = T)
 
 
 ### variância 
 
- var(filhos, na.rm = T)
+var(filhos, na.rm = T)
 
 
 ### desvio padrão
