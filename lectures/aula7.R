@@ -249,9 +249,10 @@ selected_starwars <- selected_starwars[!is.na(selected_starwars$mass),]
 
 # group_by() - agrupa a base
 # summarise() - sumariza a base
+
 selected_starwars %>% group_by(species) %>% summarise(mass_of_species = sum(mass, na.rm = TRUE))
-#ou
 selected_starwars %>% filter(species == "Droid") %>% summarize(number_of_droids = n())
+
 ## retirar linhas da base com NA - não teve entrada 
 ## star_sem_na <- starwars[!is.na(starwars$species),]
 
