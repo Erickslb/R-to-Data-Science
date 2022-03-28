@@ -3,6 +3,7 @@ library(dplyr)
 library(tidyr)
 library(tibble)
 library(readxl)
+library(ggplot2)
 
 setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/R-to-Data-Science/data_analysis")
 
@@ -76,7 +77,6 @@ dados_esc <- esc_info1 %>%
   mutate(prop_sim = prefere_prod_marca_sust/(prefere_prod_marca_sust+nao_prefere_prod_marca_sust))
 
 dados_esc
-
 ### Cruzamento de variáveis
 esc_eng <-dados_tibble %>%
   group_by(escolaridade) %>%
@@ -86,6 +86,13 @@ dados_esc <- esc_eng %>%
   full_join(dados_esc, by = "escolaridade")
 
 dados_esc
+### plotando
+arrange(dados_esc,media_nocao_impacto)
+p<-ggplot(data=arrange(dados_esc,media_nocao_impacto), aes(x=escolaridade, y=media_nocao_impacto)) +
+  geom_bar(stat="identity",width=0.2)+
+  theme(axis.text.x = element_text(angle = 45))
+
+p
 
 ### O que a renda pode dizer sobre como o indivíduo se comporta em 
 ### relação a esses assuntos?
