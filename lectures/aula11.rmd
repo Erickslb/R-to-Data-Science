@@ -1,0 +1,72 @@
+---
+title: "Aula 11"
+output:
+  bookdown::pdf_document2:
+    fig_caption: yes
+  bookdown::html_document2:
+    fig_caption: yes
+---
+
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabela}
+
+
+```{r entrada, include=FALSE}
+# para forçar idioma no pdf 
+# forçar idioma no html _bookdown.yml 
+library(corrplot)
+```
+
+
+
+Este nosso encontro começa com o uso do R Markdown.
+
+Você baixou o TinyTex ou o MacTex? <https://cran.r-project.org/web/packages/tinytex/index.html> ou <https://tug.org/mactex/>
+
+** DICA ** 
+
+Erick Brito:  pra quem tá no Linux, é só dar um 'sudo apt-get install texlive'
+
+
+Vamos analisar correlações no mtcars.
+
+Cada `chunk` é um trecho de código do `R` que será executado e cujo output irá diretamente para o documento final.
+
+```{r correl}
+matriz_correlacao <- cor(mtcars)
+
+print(matriz_correlacao)
+```
+
+Se colocarmos a opção `eval=FALSE`, apenas o código é exibido, sem que o os dados sejam plotados, no caso da matriz de correlação é uma excelente ideia:
+
+```{r correl2, eval=FALSE}
+print(matriz_correlacao)
+```
+
+Se estivéssemos escrevendo um relatório para um cliente, a parte do código deveria ser eliminada. O `knitr` permite que coloquemos a opção `echo=FALSE` na definição do chunk e, assim, apenas o gráfico é produzido:
+
+```{r correl3, echo=FALSE, fig.cap="correlações com setores"}
+corrplot(matriz_correlacao, method="pie")
+```
+
+Podemos colocar um caption na figura. Esta figura pode, inclusive, ser referenciada posteriormente:
+
+```{r Correl4, echo=FALSE, fig.cap="correlações com números"}
+corrplot(matriz_correlacao, method="number", number.cex= 0.70)
+```
+
+Como você pode observar as Figuras \@ref(fig:correl3) e \@ref(fig:Correl4) apresenta uma excelente análise sobre como as variáveis se comportam duas a duas. Note que preciso, obrigatoriamente, colocar `fig:` como referência para **chamar** a figura corretamente.
+
+```{r correl5, echo=FALSE, fig.cap="Correlações diagonal inferior"}
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(matriz_correlacao, method="color", col=col(200),  
+         type="lower", order="hclust", 
+         addCoef.col = "black", number.cex= 0.70, ### reduzir tamanho do texto
+         tl.col="black", tl.srt=45, 
+         diag=FALSE)
+```
+
+A Figura \@ref(fig:correl5) apresenta a numeração gerada de forma automática.
+
+> Dúvidas?

@@ -1,0 +1,149 @@
+---
+title: "Aula 12"
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+  bookdown::pdf_document2:
+    fig_caption: yes
+---
+
+# Regressão - alguns testes 
+
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabela}
+
+```{r entrada, include=FALSE}
+# para forçar idioma no pdf 
+# forçar idioma no html _bookdown.yml 
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+library(readxl)
+library(car)
+setwd('/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/R-to-Data-Science/lectures')
+imoveis <- read_excel( "lec-data/imoveis_icarai.xlsx", col_names=TRUE)
+```
+
+
+
+Vamos analisar a base de dados de imóveis?
+
+Repare a estrutura dos dados coletados sobre apartamentos localizados no bairro Icaraí-Niterói.
+
+```{r , echo= F}
+imoveis
+```
+
+
+## Estatística descritiva
+
+Um primeiro passo é analisar algumas medidadas relacionadas à variável.
+
+```{r , echo= F}
+summary(imoveis)
+```
+
+
+## Gráficos combinados 
+
+```{r , echo= F}
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+pairs(imoveis, diag.panel = panel.hist)
+```
+
+
+## Correlações 
+
+```{r , echo= F}
+imo_cor <- cor(imoveis)
+imo_cor
+```
+
+
+## Heatmap
+
+```{r }
+heatmap(abs(imo_cor))
+```
+
+
+## Tabela "melhorada"
+
+A imagem \@ref(fig:correl) apresenta as correlações entre as variáveis. 
+
+```{r correl,  fig.align='center', echo=F, fig.cap="Correlações"}
+# fig.width = 7, fig.height = 7 modificam o tamanho da imagem no chunk
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(imo_cor, method="color", col=col(200),  
+         type="lower", order="hclust", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col="black", tl.srt=45, #Text label color and rotation
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE 
+)
+```
+
+# Estimando um modelo "forçado" de regressão múltipla
+
+
+```{r , echo= F}
+attach(imoveis)
+modelo <- lm( `valor do imóvel`~ iptu + condominio + `metros quadrados`+ quartos + vagas, data = imoveis)
+summary(modelo)
+```
+## Multicolinearidade
+
+Foram detetados valores superiores a 5,indicando associação muito forte entre variáveis explicativas. 
+
+Saiba mais sobre o pacote em https://www.rdocumentation.org/packages/car/versions/3.0-10/topics/vif
+
+E sobre o tópico em http://www.portalaction.com.br/analise-de-regressao/36-analise-de-colinearidade-e-multicolinearidade 
+
+Na prática está afirmando que o modelo é pouco confiável. 
+
+```{r , echo= F}
+vif(modelo)
+```
+
+
+
+# Exercício: 
+ 
+ Ler a base de dados familias.xlxs, e analisar a regressão. 
+ 
+## Lendo a base
+
+```{r exe1}
+familias <- read_excel( "lec-data/familias.xlsx", col_names=TRUE)
+```
+\hspace{2mm} A base de dados é a seguinte
+```{r exe2, echo = FALSE}
+head(familias)
+```
+## Análises
+O número de filhos interfere no tamanho da poupança das famílias?
+```{r exe 4}
+
+a <- select(familias, `Número de Filhos`,Poupança)
+str(a)
+a %>% group_by(`Número de Filhos`) %>%
+    summarise(media = n())
+```
+## Matriz de correlações
+```{r exe3}
+matriz_correlacao = cor(familias[-1])
+corrplot(matriz_correlacao, method="number", number.cex= 0.70)
+```
+# Referencias
+
+[https://shiny.rstudio.com/articles/rmarkdown.html](https://shiny.rstudio.com/articles/rmarkdown.html)
+
+

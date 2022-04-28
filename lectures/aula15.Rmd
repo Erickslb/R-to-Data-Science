@@ -1,0 +1,224 @@
+---
+title: "Aula 15"
+output:
+  html_document:
+    toc: true
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(formattable)
+library(kableExtra)
+library(janitor)
+library(ggrepel)
+library(knitr)
+library(DT)
+library(viridis)
+library(hrbrthemes)
+library(samplingbook)
+
+```
+
+## Binomial
+
+
+Um dos principais modelos discretos de probabilidade é o modelo Binomial. Quando possuímos uma sequência de n experimentos independentes entre si, com variáveis binárias como resposta (sucesso ou fracasso), dada uma determinada probabilidade constante de sucesso, podemos obter a probabilidade de ocorrência de k sucessos através da distribuição binomial.
+
+\begin{equation}
+ P ( X = k) =\frac{n!}{ k! (n-k) !}p^k (1-p)^{n-k}  
+\end{equation}
+ 
+
+PROBLEMA 1) Imagine uma prova com 4 questões. Em cada questão há 5 alternativas (a, b, c, d e d). Qual a probabilidade de alguém acertar no chute 3 questões?
+
+
+```{r }
+
+dbinom(x = 3, size = 4, prob = 0.2)
+```
+
+
+
+
+PROBLEMA 2) Um inspetor de qualidade extrai uma amostra de 10 tubos aleatoriamente de carga muito grande de tubos que se sabe que contem 20% de tubos defeituosos. Qual a probabilidade de que não mais do que 2 tubos extraídos sejam defeituosos?
+
+\begin{equation}
+P ( X = 0) + P ( X = 1) + P ( X = 2) 
+\end{equation}
+
+
+
+```{r }
+
+pbinom(q = 2, size = 10, prob = 0.2)
+```
+
+
+
+DESAFIO 1) Em uma empresa, sabe-se que 20% das faturas de compra foram superestimadas. Um auditor selecionou aleatoriamente e com reposição 5 faturas de compra. Qual a probabilidade de que exatamente 3 tenham sido superfaturadas?
+
+
+```{r }
+
+dbinom(x = 3, size = 5, prob = 0.2)
+```
+
+
+
+DESAFIO 2) Acredita-se que 20% dos moradores das proximidades de uma grande siderúrgica têm alergia aos poluentes lançados ao ar. Admitindo que este percentual de alérgicos seja real (correto) qual a probabilidade de que pelo menos 4 moradores tenham alergia entre 13 selecionados ao acaso ?
+
+```{r }
+
+pbinom(q = 4, size = 13, prob = 0.2)
+```
+
+
+
+
+## Poisson
+
+Enquanto a distribuição binomial pode ser usada para encontrar a probabilidade de um número designado de sucessos em n tentativas, a distribuição de Poisson é usada para encontrar a probabilidade de um número designado de sucessos por unidade de intervalo. 
+As outras condições exigidas para se aplicar a distribuição Binomial são também exigidas para se aplicar a distribuição de Poisson; isto é, 
+(1) deve existir somente dois resultados mutuamente exclusivos,
+ (2) os eventos devem ser independentes, e 
+(3) o número médio de sucessos por unidade de intervalo deve permanecer constante. 
+A distribuição de Poisson é frequentemente usada em pesquisa operacional na solução de problemas administrativos. Alguns exemplos são o número de chamadas telefônicas para a polícia por hora, o número de clientes chegando a uma bomba de gasolina por hora, e o número de acidentes de tráfego num cruzamento por semana. 
+A probabilidade de um número designado de sucessos por unidade de intervalo, P(X), pode ser encontrada por:
+
+ \begin{equation}
+ P ( X = k) =\frac{ e^{-\lambda}} {\lambda}^k  }{ x! }  
+\end{equation}
+
+PROBLEMA 3) Um departamento de polícia recebe em média 5 solicitações por hora.  
+Qual a  probabilidade  de  receber  2  solicitações numa hora selecionada aleatoriamente? 
+
+```{r }
+dpois(x = 2, lambda = 5)
+```
+
+
+PROBLEMA 4) Numa central telefônica, o número de chamadas chega segundo uma distribuição de Poisson, com a média de oito chamadas por minuto. Determinar qual a probabilidade de que num minuto se tenha dez ou mais chamadas.
+
+100%-(P(X=0)-...–P(X=9))
+
+
+```{r }
+1 - ppois(q = 9, lambda = 8)
+```
+
+
+DESAFIO 3) A  experiência  passada  indica  que  um  número  médio  de  6  clientes  por hora  param  para  colocar  gasolina  numa  bomba.   
+a) Qual é a probabilidade de 3 clientes pararem qualquer hora?
+
+```{r }
+dpois(x = 3, lambda = 6)
+```
+
+
+b) Qual é a probabilidade de 3 clientes ou menos pararem em qualquer hora?
+```{r }
+qpois(q = 3, lambda = 6)
+```
+
+
+
+
+
+
+## NORMAL - Gaussiana
+
+```{r }
+ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
+stat_function(fun = dnorm)
+```
+
+
+No R base
+
+
+```{r }
+#criar uma sequencia
+x <- seq(-4, 4, length=100)
+
+# distribuição 
+y <- dnorm(x)
+
+# colocando os nomes
+plot(x,y, type = "l", lwd = 2, axes = FALSE, xlab = "", ylab = "")
+axis(1, at = -3:3, labels = c("-3s", "-2s", "-1s", "mean", "1s", "2s", "3s"))
+```
+
+Para calcularmos a densidade da distribuição normal em um certo ponto, usamos o comando ‘dnorm’, colocando como parâmetros o ponto desejado, além da média e do desvio padrão da curva normal em questão:
+
+
+```{r }
+dnorm(0.5,mean=0,sd=1)
+```
+
+
+
+PROBLEMA 5) As notas de Estatística dos alunos de uma Universidade distribuem-se normalmente com média de 6,4 e desvio padrão de 0,8. Em uma classe de 80 alunos, quantos terão nota:
+ (a) menor do que 5,0? 
+ 
+```{r }
+80*pnorm(5,mean=6.4,sd=0.8)
+
+```
+
+
+
+
+ (b) entre 5,0 e 7,5? 
+
+```{r }
+ 
+80*(pnorm(7.5,mean=6.4,sd=0.8)- pnorm(5,mean=6.4,sd=0.8))
+
+```
+
+
+
+
+ (c) maior que 7,5? 
+
+
+```{r }
+ 
+80*(1-pnorm(7.5,mean=6.4,sd=0.8))
+
+```
+
+
+DESAFIO 4) A duração de um certo componente eletrônico é normalmente distribuída com média de 850 dias e desvio-padrão de 45 dias. Calcule a probabilidade de um componente desse tipo durar:
+ (a) entre 700 e 1000 dias  
+
+
+
+
+(b) mais do que 800 dias 
+
+
+
+(c) menos do que 750 dias 
+
+
+
+
+## INTERVALO DE CONFIANÇA
+
+[Para agregar mais ao projeto](https://rstudio-pubs-static.s3.amazonaws.com/79974_bf8878645cc74f1da3b991a9e81400de.html)
+
+
+## AMPLIAR IDEIAS
+
+[Excelente pacote para expandir horizontes](https://cran.r-project.org/web/packages/samplingbook/samplingbook.pdf)
+
+
+[Excelente link para expandir horizontes](http://www.raosoft.com/samplesize.html)
+
+
+

@@ -1,0 +1,90 @@
+---
+title: "Aula 13"
+author: "Erick Brito"
+date: '2022-04-04'
+output: html_document
+---
+# Aula 13 - Rmarkdown
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include= FALSE}
+library(corrplot)
+library(tidyverse)
+library(lubridate)
+library(car)
+library(olsrr)
+```
+
+## Lendo os dados
+
+```{r data, results = "hide"}
+library(readxl)
+
+dados <-read_excel("lec-data/base.xlsx",col_names=TRUE)
+
+str(dados)
+```
+
+### Selecionando apenas dados numéricos e removendo NA's
+```{r num1, echo = TRUE}
+
+### Selecionando dados numéricos
+dados_num <- select(dados, -COD , -`Max_Date (saida)`, -`Min_Date (estreia)`, -Artist, -`Track Name`, -artists_0_name, -artists_0_id, -release_date,-Min_peak_date, -genres, -`semanas no pico` )
+
+### Removendo NA's
+dados_teste <- filter(dados_num,  !is.na(posicao_estreia))
+
+### tirar todos os dados com NA
+### exclui a coluna inteira com NA
+dados_teste <- na.omit(dados_num)
+
+head(dados_num)
+```
+
+### Matriz de correlações
+```{r cor1, echo = TRUE}
+correlacoes <- cor(dados_teste)
+
+corrplot(correlacoes)
+```
+
+### Modelagem noob
+```{r mod1, echo = TRUE}
+attach(dados_teste)
+
+### modelagem com todas as variáveis ~. 
+modelo2 <- lm( avg_streams_semanais~., data = dados_num)
+
+###  modelo noob
+### variável que está sendo explicado
+modelo <- lm(  avg_streams_semanais  ~ posicao_estreia + qtd_semanas_no_chart+longevidade+maturação+peak_position+velocidade+repertorio_no_chart+popularidade_inicial+popularidade_final+followers_inicial+followers_inicial, data = dados_num)
+summary(modelo)
+```
+
+### Pacote Olsrr
+
+Utilizaremos o pacote \emph{olsrr} para fazer regressões úteis.
+
+Leia mais sobre neste [manual](https://cran.r-project.org/web/packages/olsrr/olsrr.pdf).
+
+
+### Regressões por passos
+
+```{r mod2, echo = TRUE}
+teste <- ols_step_all_possible(modelo)
+head(teste)
+```
+
+### esquema inteligente para alcançar o maior valor. 
+```{r mod3, echo = TRUE}
+### which vai devolver a linha onde ocorre a condiçào dentro 
+# dos parênteses  
+j <- which(teste$rsquare == max(teste$rsquare))
+teste[j, ]
+```
+
+
+
+
