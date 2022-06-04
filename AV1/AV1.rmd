@@ -142,6 +142,73 @@ economy <- economy %>%
 
 ## Análises 
 
+### Mapa CT ou TR ?
+
+Uma discussão bastante recorrente no cenário do CS:GO, é a dúvida sobre qual mapa é mais CT-sided ou T-sided. Ou seja, se o mapa em questão é mais fácil de atacar para os terroristas, ou se é mais fácil defender para os contra-terroristas. Essa questão é bastante essencial no cenário competitivo, já que ao ter o conhecimento sobre isso, o time que tem a opção de escolher o mapa irá na maioria da vezes optar por escolher o lado mais fácil, para além de começar pontuando, fazer o time ganhar mais confiança. 
+
+Assim como primeira análise propusermos a identificar quais mapa são mais CT's a partir da tabela results.csv, que contém os resultados de cada lado das partidas incluindo quem começou de ct. Vale ressaltar, que como a Valve (desenvolvedora do jogo) está constantemente atualizando o jogo, assim o deixando mais dinâmico, então a tendência é que pelo menos a cada ano os mapas também tendem a mudar o lado mais fácil de se jogar, portanto realizamos uma análise anual.
+
+
+```{r analise1}
+# Adicionando o ano em que as partidas foram realizadas no data frame results
+results$year <- with(results, year(date))
+
+# Variável que contém a soma dos jogos em cada mapa por ano
+total_per_map_year <- results %>%
+  group_by(X_map) %>%
+  count(year)
+
+attach(results)
+
+# Adicionando uma nova coluna binária, onde 1 representa se o lado ct ganhou o ]
+# lado e 0 se perdeu.
+for(i in 1:nrow(results)) {
+  if (starting_ct[i] == 2) {
+    if (ct_2[i] > t_1[i]) {
+      results$ct_winner[i] <- 1
+    } else {
+      results$ct_winner[i] <- 0
+    }
+  } else {
+    if (ct_1[i] > t_2[i]) {
+      results$ct_winner[i] <- 1
+    } else {
+      results$ct_winner[i] <- 0
+    }
+  }
+}
+
+# Novo dataframe realizado a partir do agrupamento dos maps e anos, com a 
+# quantidade de vitórias do lado ct.
+maps <- results %>%
+  group_by(X_map, year) %>%
+  summarize(total_ct_winner = sum(ct_winner, na.rm = TRUE))
+
+# Adicionando a coluna de uma aproximação da porcentagem vitória do lado ct.
+for(i in 1:nrow(total_per_map_year)) {
+  maps$porcentagem[i] <- as.integer(maps[i, 3]*100/total_per_map_year[i, 3])
+}
+
+# Removendo as linhas em que o Mapa escolhido era dado como "Default"
+maps <- maps[-c(10:14), ]
+```
+
+Com as modificações realizadas obtemos o seguinte gráfico
+
+```{r grafico1, echo=F}
+maps_graph <- maps %>%
+  ggplot(mapping = aes(x=year, 
+                       y=porcentagem, 
+                       color=X_map)) +
+  geom_point(size=2) +
+  geom_line(size=1) +
+  labs(x = "anos",
+       y = "porcentagem",
+       title = "Mapas CT's")
+
+maps_graph
+```
+
 
 ## Referências
 
