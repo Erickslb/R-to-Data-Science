@@ -2,8 +2,9 @@
 title: "Trabralho AV1"
 author: "Erick Brito e Vinícius Mitsuo"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
+always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +20,11 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(corrplot)
 library(tidyverse)
 library(lubridate)
+
+suppressPackageStartupMessages(library(googleVis))
+library(googleVis)
+op <- options(gvis.plot.tag = 'chart')
+
 ```
 # Projeto {#ge}
 Os Esportes Eletrônicos ou apenas eSports, como é mundialmente conhecido, vêm dominando o mundo gamer e tecnológico. Numa definição simples, os eSports giram em torno de competições de jogos eletrônicos em que atletas profissionais disputam partidas, seja presencial ou on-line. Na maioria delas, os espectadores estão presentes no local do evento ou em plataformas de streaming.
@@ -27,9 +33,9 @@ Dado o crescimento dos Esportes Eletrônicos, assim como o crescimento desse mer
 
 ## Motivação {#ge2}
 
-A sensação dos Esportes Eletrônicos fez com que cada vez mais empresas/organizações se interessassem e investissem nesse mercado. No caso do CS:GO não é diferente.
+A sensação dos Esportes Eletrônicos fez com que cada vez mais empresas/organizações se interessassem e investissem nesse mercado. No caso do CS:GO, isso não é diferente.
 
-Hoje em dia existem organizações muito grandes participando do cenário competitivo de CS:GO, como por exemplo, Team Liquid, FaZe Clan, TSM, entre outras mais, que são muito valiosas e possuem times profissionais excelentes. Essas organizações estão constantemente alterando o elenco de seus times e procurando um meio de se sobressair no cenário competitivo. 
+Hoje em dia existem organizações gigantes participando do cenário competitivo de CS:GO, como por exemplo, Team Liquid, FaZe Clan, TSM, entre outras mais, que são muito valiosas e possuem times profissionais excelentes. Essas organizações estão constantemente alterando o elenco de seus times e procurando um meio de se sobressair no cenário competitivo. 
 
 Alterar um time, buscar uma melhora técnica em jogo, criar táticas, tudo isso depende de informações, depende de estar seguindo o meta -- Meta pode ser usado como um acrônimo para “most effective tactics available”, em português “táticas mais eficazes disponíveis”, e chamar algo de “meta” significa que é uma maneira eficaz de atingir o objetivo do jogo, seja vencer outros jogadores ou vencer o próprio jogo.
 
@@ -56,6 +62,7 @@ nossas tabelas.
 
 ```{r reading}
 ### Usando uma função do R Base para ler os csvs e assim os armazenamos nas seguintes variáveis
+setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/A1")
 players <- read.csv2("players.csv", sep=",")
 results <- read.csv2("results.csv", sep=",")
 picks <- read.csv2("picks.csv", sep=",")
@@ -107,7 +114,7 @@ economy_empty_strings <- economy %>%
 ```
 Com isso, conseguimos ter uma noção de quantas observações(linhas) podemos remover para que assim alcancemos a base limpa.
 
-Observando **results_empty_strings** e **picks_empty_strings** percebemos que elas já estão limpas e prontas para uso. Mas ao observar as **players_empty_strings**(o mesmo ocorre para **economy_empty_strings**) temos, em quantidades grandes até, dados faltando em algumas colunas:
+Observando **results_empty_strings** e **picks_empty_strings** percebemos que elas já estão limpas e prontas para uso. Mas ao observar as **players_empty_strings**(o mesmo ocorre para **economy_empty_strings**) temos, em grandes quantidades até, dados faltando em algumas colunas:
 
 ```{r limpezashow, echo= TRUE}
 players_empty_strings[10:15]
@@ -118,20 +125,23 @@ Como por exemplo as colunas *map_2* e *map_3*, que mostram quais foram os segund
 Com essas informações e usando também do nosso conhecimento sobre algumas coisas do jogo, uma limpeza que pode ser feita de já, é remover algumas colunas que já sabemos que não vão ser necessárias para a análise, 
 ```{r limpeza2}
 ### Aqui estamos removendo colunas que estão com grande quantidade de dados faltando
-### e que não viriam a ser tão utilizadas.
+### e que não virão a ser tão utilizadas.
 players <- players %>%
   select(-flash_assists, -kast, -adr,-c(m1_kills:m3_rating_t)) %>%
   subset(player_name!="")
 
-### Removendo colunas que não importaram para nossa análise, decidimos analisar
+### Removendo colunas que não importarão para nossa análise, decidimos analisar
 ### só certos rounds, que acontecem de certo em uma partida. No CS:GO uma partida
 ### tem até 30 rounds no "tempo regulamentar", podendo ter muito mais caso essa
 ### partida vá pro overtime. Mas de certo, 16 rounds ocorrem em qualquer partida
 ### então decidimos analisar apenas esses.
-economy_mod <- economy %>%
+economy <- economy %>%
   select(-c(X17_t1:X30_t1), -c(X17_t2:X30_t2), -c(X17_winner:X30_winner))
 
 ```
+
+## Análises 
+
 
 ## Referências
 
