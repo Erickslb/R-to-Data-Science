@@ -66,7 +66,7 @@ nossas tabelas.
 
 ```{r reading}
 ### Usando uma função do R Base para ler os csvs e assim os armazenamos nas seguintes variáveis
-# setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/A1")
+setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/A1")
 players <- read.csv2("players.csv", sep=",")
 results <- read.csv2("results.csv", sep=",")
 picks <- read.csv2("picks.csv", sep=",")
@@ -298,6 +298,44 @@ fig <- df %>%
 
 fig
 
+```
+
+### Mapas mais pickados em partidas MD1
+
+Nas partidas melhores de 1 (MD1), as equipes devem vetar os mapas de maneira alternada até que reste um mapa a ser jogado, onde o lado de ínicio é definido por um round faca. 
+
+Ter o conhecimento sobre os mapas mais escolhidos é bastante essencial para qualquer time do competitivo, já que possivelmente você deverá treiná-los ou então veta-los. Sabendo disso, decidimos fazer uma análise para descobrir quais são os mapas mais jogados em cada ano.
+
+```{r analise3}
+picks$date <- ymd(picks$date)
+
+# Adicionando uma coluna com o ano dos jogos e excluindo as outras 
+# variáveis, com excessão da best_of e o left_over.
+picks <- picks %>%
+  transmute(year = year(date),
+            best_of = best_of,
+            left_over = left_over)
+
+# Vetor com os mapas do jogo
+map <- c("Cache","Cobblestone","Dust2","Inferno","Mirage","Nuke","Overpass", "Train", "Vertigo")
+
+# Dataframe com apenas as partidas md1, agrupadas pelo ano e mapa escolhido
+picks_md1 <- picks %>%
+  filter(best_of == 1,
+         left_over %in% map) %>%
+  group_by(year, left_over) %>%
+  summarise(n = n())
+```
+
+```{r grafico3, echo=F}
+fig <- picks_md1 %>% 
+  plot_ly(x = ~year, 
+          y = ~n, 
+          color = ~left_over,
+          colors = "Paired",
+          type = 'bar')
+
+fig
 ```
 
 ## Referências
