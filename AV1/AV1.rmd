@@ -20,6 +20,10 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(corrplot)
 library(tidyverse)
 library(lubridate)
+library(plotly)
+library(data.table)
+library(countrycode)
+library(plotly)
 
 suppressPackageStartupMessages(library(googleVis))
 library(googleVis)
@@ -62,7 +66,7 @@ nossas tabelas.
 
 ```{r reading}
 ### Usando uma função do R Base para ler os csvs e assim os armazenamos nas seguintes variáveis
-setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/A1")
+# setwd("/home/erick/Documents/MAP/5prd/Introdução ao R aplicado em Ciência de Dados/A1")
 players <- read.csv2("players.csv", sep=",")
 results <- read.csv2("results.csv", sep=",")
 picks <- read.csv2("picks.csv", sep=",")
@@ -150,6 +154,8 @@ Assim como primeira análise propusermos a identificar quais mapa são mais CT's
 
 
 ```{r analise1}
+results$date <- ymd(results$date)
+
 # Adicionando o ano em que as partidas foram realizadas no data frame results
 results$year <- with(results, year(date))
 
@@ -160,8 +166,8 @@ total_per_map_year <- results %>%
 
 attach(results)
 
-# Adicionando uma nova coluna binária, onde 1 representa se o lado ct ganhou o ]
-# lado e 0 se perdeu.
+# Adicionando uma nova coluna binária, onde 1 representa se o lado ct ganhou e
+# 0 se perdeu.
 for(i in 1:nrow(results)) {
   if (starting_ct[i] == 2) {
     if (ct_2[i] > t_1[i]) {
@@ -209,6 +215,90 @@ maps_graph <- maps %>%
 maps_graph
 ```
 
+### Times com os Melhores Pistols
+No CS:GO, a sequência de abertura de cada jogo e lado de mapa é o que é conhecido como pistol round ou pistol. É bastante importante a vitória já que além do ponto ele determina qual time terá um começo com vantagem econômica. 
+
+Embora os pistols não sejam o fator decisivo em séries individuais, as equipes podem mostrar uma quantidade moderada de melhorias em sua estratégia e habilidade para melhorar seu sucesso nessa fase. 
+
+Assim é de bastante interesse para os times conseguirem saber o quão bem os pitols adversários estão, além de ser uma informação bastante útil para possíveis apostadores, mesmo que ganhar pistols de forma consistente possa ser uma tarefa bem difícil.
+
+```{r analise2}
+economy$date <- ymd(economy$date)
+players$date <- ymd(players$date)
+
+# Dataframe com o nº do vencedor do pistol e o nº do time que venceu.
+df <- economy %>%
+  gather(key="number_team", value="team", team_1, team_2) %>%
+  transmute(team = team,
+            year=year(date),
+            X1_winner = as.numeric(X1_winner),
+            number_team=as.numeric(gsub('team_','',number_team))) %>%
+  filter(year!=2020)
+
+attach(df)
+
+# Adicionando uma nova coluna binária, onde 1 representa se o time ganhou o
+# pistol e 0 se perdeu.
+for(i in 1:nrow(df)) {
+  if (X1_winner[i] == number_team[i]) {
+    df$result[i] <- 1
+  } else {
+    df$result[i] <- 0
+  }
+}
+
+# Dataframe com a quantidade de jogos e sua taxa de vitória por ano e time
+df <- df %>%
+  group_by(team, year) %>%
+  summarize(media = mean(result),
+            n = n())
+
+# Dataframe com a quantidade de nacionalidade dos jogadores por time e ano.
+country <- players %>%
+  transmute(team = team,
+            year=year(date),
+            country=country) %>%
+  group_by(team, year, country) %>%
+  summarise(n = n())
+
+# Dataframe para encontrar a nacionalidade do time.
+group <- as.data.table(country)
+group <- group[group[, .I[which.max(n)], by=team]$V1] %>%
+  select(team, country)
+
+custom = c("Argentina" = "South America", 
+           "Brazil" = "South America",
+           "Furious" = "South America",
+           "Colombia" = "South America",
+           "United States" = "North America",
+           "Canada" = "North America")
+
+# Realizando a coluna dos países ao dataframe df e adicionando uma coluna do 
+# continente do país
+df <- df[df$n > 50,] %>%
+  merge(group, by="team",all.x=TRUE) %>%
+  mutate(continent = countrycode(sourcevar = country,
+                                 origin = "country.name",
+                                 destination = "continent",
+                                 custom_match = custom))
+```
+
+```{r grafico2,  results='asis', tidy=F, echo=F}
+fig <- df %>%
+  plot_ly(
+    x = ~n, 
+    y = ~media,
+    color = ~continent,
+    frame = ~year, 
+    text = ~team,
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  )
+
+fig
+
+```
 
 ## Referências
 
