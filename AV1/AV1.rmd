@@ -2,8 +2,8 @@
 title: "Trabralho AV1"
 author: "Erick Brito e Vinícius Mitsuo"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 always_allow_html: yes
 ---
 
@@ -198,11 +198,11 @@ map <- gvisGeoChart(
 #plot(map)
 ```
 
-### Dinheiro em premiação recebido por uma das maiores organizações no CS 
+### Dinheiro em premiação recebido por uma das maiores organizações no CS {#lp} 
 
 Só para que tenhamos uma noção do tamanho do mercado de esportes eletrônicos, vamos analisar quanto dinheiro(em dólares) a FaZe Clan, uma das organizações mais valiosas de eSports no mundo, já ganhou em campeonatos de CS:GO, desde 2016 até 2022.
 
-Para isso, vamos raspar dados da Liquipedia{#lpedia}, uma wiki pertencente à TeamLiquid, sendo um dos recursos mais usados em todos os esports.
+Para isso, vamos raspar dados da Liquipedia, uma wiki pertencente à TeamLiquid, sendo um dos recursos mais usados em todos os esports.
 
 ```{r fazeresults}
 ### Mostrando o tamanho do mercado
@@ -293,7 +293,7 @@ ggplot(data=topfk_media, aes(x=player_name, y=media_fkdiff)) +
 
 o n, abaixo da média de cada jogador, é o número de partidas que esse jogador jogou.
 
-### Mapa CT ou TR?
+### Mapa CT ou TR? 
 
 Uma discussão bastante recorrente no cenário do CS:GO, é a dúvida sobre qual mapa é mais CT-sided ou T-sided. Ou seja, se o mapa em questão é mais fácil de atacar para os terroristas, ou se é mais fácil defender para os contra-terroristas. Essa questão é bastante essencial no cenário competitivo, já que ao ter o conhecimento sobre isso, o time que tem a opção de escolher o mapa irá na maioria da vezes optar por escolher o lado mais fácil, para além de começar pontuando, fazer o time ganhar mais confiança. 
 
@@ -360,7 +360,8 @@ maps_graph <- maps %>%
 maps_graph
 ```
 
-### Times com os Melhores Pistols
+### Times com os Melhores Pistols {#plotly} {#country}
+
 No CS:GO, a sequência de abertura de cada jogo e lado de mapa é o que é conhecido como pistol round ou pistol. É bastante importante a vitória já que além do ponto ele determina qual time terá um começo com vantagem econômica. 
 
 Embora os pistols não sejam o fator decisivo em séries individuais, as equipes podem mostrar uma quantidade moderada de melhorias em sua estratégia e habilidade para melhorar seu sucesso nessa fase. 
@@ -484,4 +485,8 @@ fig
 
 [[2]](#ge2) [Top 10 organizações mais valiosas no eSports - 13/04/2021](https://ge.globo.com/esports/stories/2021/04/13/as-10-organizacoes-mais-valiosas-nos-esportes-eletronicos.ghtml)
 
-[[3]](#lpedia) [Resultados - Faze Clan (2016-2022)](https://liquipedia.net/counterstrike/FaZe_Clan/Results)
+[[3]](#lp) [Resultados - Faze Clan (2016-2022)](https://liquipedia.net/counterstrike/FaZe_Clan/Results)
+
+[[4]](#plotly) [Documentação do pacote Plotly](https://plotly.com/r/)
+
+[[5]](#country) [Pacote countrycode](https://cran.r-project.org/web/packages/countrycode/countrycode.pdf)
