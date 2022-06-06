@@ -2,8 +2,8 @@
 title: "Trabralho AV1"
 author: "Erick Brito e Vinícius Mitsuo"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 always_allow_html: yes
 ---
 
@@ -24,6 +24,11 @@ library(plotly)
 library(data.table)
 library(countrycode)
 library(plotly)
+library(RColorBrewer)
+library(stringr)
+library(readr)
+library(rvest)
+library(htmltools)
 
 suppressPackageStartupMessages(library(googleVis))
 library(googleVis)
@@ -146,7 +151,149 @@ economy <- economy %>%
 
 ## Análises 
 
-### Mapa CT ou TR ?
+### Jogadores profissionais por país (2018-2020)
+
+Vamos dar uma olhada em como estão distribuidos os jogadores profissionais de CSGO pelo mundo:
+
+```{r mapa, results='asis'}
+### Transformando
+players$date <- ymd(players$date)
+economy$date <- ymd(economy$date)
+picks$date <- ymd(picks$date)
+results$date <- ymd(results$date)
+
+### Escolhendo o ano a ser considerado
+num_jog_pais <- players %>% filter(year(date) >= 2018)
+
+### Selecionando valores únicos e contando
+num_jog_pais <-distinct(num_jog_pais, player_name, .keep_all = TRUE)
+num_jog_pais <- num_jog_pais %>% count(country)
+
+
+### Separando os intervalos
+breaks <- seq(floor(min(num_jog_pais$n)),
+              ceiling(max(num_jog_pais$n)),
+              by = 150)
+
+### Escolhendo a cor da palheta
+pal <- brewer.pal(n = length(breaks), name = "Blues")
+
+### Dicionário para os intervalos de classe e cores associadas.
+cl <- sprintf("{values:[%s],\n colors:[%s]}",
+              paste0(sprintf("'%0.1f'", breaks), collapse = ", "),
+              paste0(sprintf("'%s'", pal), collapse = ", "))
+
+### Mapa do número de jogadores por pais (2018-2020)
+map <- gvisGeoChart(
+  data = num_jog_pais,
+  locationvar = "country",
+  colorvar = "n",
+  options = list(title = "Número de jogadores por país / 2018 - 2020",
+                 region = "world",
+                 displayMode = "regions",
+                 resolution = "countries",
+                 colorAxis = cl,
+                 width = 640,
+                 height = 480))
+#plot(map)
+```
+
+### Dinheiro em premiação recebido por uma das maiores organizações no CS 
+
+Só para que tenhamos uma noção do tamanho do mercado de esportes eletrônicos, vamos analisar quanto dinheiro(em dólares) a FaZe Clan, uma das organizações mais valiosas de eSports no mundo, já ganhou em campeonatos de CS:GO, desde 2016 até 2022.
+
+Para isso, vamos raspar dados da Liquipedia{#lpedia}, uma wiki pertencente à TeamLiquid, sendo um dos recursos mais usados em todos os esports.
+
+```{r fazeresults}
+### Mostrando o tamanho do mercado
+### Pagina fonte
+html <- read_html("https://liquipedia.net/counterstrike/FaZe_Clan/Results")
+
+### Pegando a tabela de resultados
+faze_results <- html %>% 
+  html_nodes(".table-responsive") %>%
+  html_table() %>% .[[1]]
+
+
+### Limpando o data frame
+
+# Escolhendo apenas as colunas relevantes
+faze_results <- select(faze_results, c(1,2,3,4,7,8,10))
+
+# Removendo linhas inúteis da tabela dinâmica
+faze_results <- faze_results %>%
+  filter(!row_number() %in% c(1, 8, 30, 49, 74, 98, 122))
+
+# Transformando as datas em datas do lubridate
+faze_results$Date <- ymd(faze_results$Date)
+
+# Transformando string de prêmio em dólares em double
+faze_results$Prize <- parse_number(faze_results$Prize)
+
+# Transformando os valores N.A's referentes à não premiação em 0
+faze_results[is.na(faze_results)] <- 0
+
+# Resumo de quanto a organização ganhou em torneios jogados de 2016-2020
+resumo_faze <- summary(faze_results$Prize)
+resumo_faze["Sum"] <- sum(faze_results$Prize)
+resumo_faze["Tournaments"] <- nrow(faze_results)
+
+resumo_faze
+```
+
+
+
+### Top first killers
+
+First kill é, como o nome diz, a primeira kill que acontece no round. Geralmente, a porcentagem de conversão de rounds 5x4 é alta, assim, começar o round com um jogador a mais é uma grande vantagem.
+
+Uma análise relevante do ponto de vista de um apostador, de uma organização, ou de um jogador, seria sobre os jogadores com maior média de first kills por partida. Para um time, começar um round com vantagem numérica é importante, então, se uma organização está procurando por um bom jogador para essa posição, saber quem são os melhores é interessante. Para um apostador, apostar em first kills é uma boa pedida, então, tendo a informação sobre jogadores que se destacam pegando first kills faz com que um apostador tenha mais chance de ganhar apostas do tipo. Já para um jogador que joga buscando opening kills, saber quem são os melhores jogadores que jogam dessa forma já dá um bom direcionamento para o material de estudo desse jogador. 
+
+```{r firstkill}
+### Filtrando pelo ano de 2018, criando coluna com a soma e uma coluna da média
+topfkdiff <- players %>% 
+  filter(year(date) == 2018) %>% 
+  group_by(player_name) %>% 
+  summarise(media_fkdiff = mean(fkdiff), soma_fkdiff = sum(fkdiff))
+
+### Adicionando uma coluna com o número de partidas jogadas
+npartidas <- players %>% filter(year(date) == 2018) %>% count(player_name)
+topfkdiff <- topfkdiff %>% inner_join(npartidas, by = "player_name")
+
+### Dando uma olhada
+topfkdiff
+
+colnames(topfkdiff)[4] = "n_partidas"
+
+### Escolhendo somente jogadores com certo número de partidas
+### para que jogadores com poucas partidas não entrem no top
+top50 <- filter(topfkdiff, topfkdiff$n_partidas>= 50)
+
+### Pegando apenas os 10 melhores
+topfk_media <- head(arrange(top50,desc(top50$media_fkdiff)),10)
+
+```
+Temos os seguintes significados e variáveis:
+
+* **fkdiff**: È a diferença do número de first kill que o jogador fez, pelo número de first kills que o time adversário pegou no jogador.
+
+* **media_fkdiff**: Média do fkdiff de um jogador.
+
+* **player_name**: Nome do jogador.
+
+```{r plot fkdiff}
+### Plot 1 - fkmedia
+ggplot(data=topfk_media, aes(x=player_name, y=media_fkdiff)) +
+  geom_bar(stat="identity", fill="steelblue")+
+  geom_text(aes(label=round(media_fkdiff,2)), vjust=1.6, color="white", size=3.5)+
+  geom_text(aes(label = "n = "), hjust = 1.1, vjust = 3.6, color = "white", size = 3.5)+
+  geom_text(aes(label = n_partidas), hjust = -0.03, vjust = 3.6, color = "white", size = 3.5)+
+  theme_minimal()
+```
+
+o n, abaixo da média de cada jogador, é o número de partidas que esse jogador jogou.
+
+### Mapa CT ou TR?
 
 Uma discussão bastante recorrente no cenário do CS:GO, é a dúvida sobre qual mapa é mais CT-sided ou T-sided. Ou seja, se o mapa em questão é mais fácil de atacar para os terroristas, ou se é mais fácil defender para os contra-terroristas. Essa questão é bastante essencial no cenário competitivo, já que ao ter o conhecimento sobre isso, o time que tem a opção de escolher o mapa irá na maioria da vezes optar por escolher o lado mais fácil, para além de começar pontuando, fazer o time ganhar mais confiança. 
 
@@ -154,20 +301,18 @@ Assim como primeira análise propusermos a identificar quais mapa são mais CT's
 
 
 ```{r analise1}
-results$date <- ymd(results$date)
-
-# Adicionando o ano em que as partidas foram realizadas no data frame results
+### Adicionando o ano em que as partidas foram realizadas no data frame results
 results$year <- with(results, year(date))
 
-# Variável que contém a soma dos jogos em cada mapa por ano
+### Variável que contém a soma dos jogos em cada mapa por ano
 total_per_map_year <- results %>%
   group_by(X_map) %>%
   count(year)
 
 attach(results)
 
-# Adicionando uma nova coluna binária, onde 1 representa se o lado ct ganhou e
-# 0 se perdeu.
+### Adicionando uma nova coluna binária, onde 1 representa se o lado ct ganhou e
+### 0 se perdeu.
 for(i in 1:nrow(results)) {
   if (starting_ct[i] == 2) {
     if (ct_2[i] > t_1[i]) {
@@ -184,18 +329,18 @@ for(i in 1:nrow(results)) {
   }
 }
 
-# Novo dataframe realizado a partir do agrupamento dos maps e anos, com a 
-# quantidade de vitórias do lado ct.
+### Novo dataframe realizado a partir do agrupamento dos maps e anos, com a 
+### quantidade de vitórias do lado ct.
 maps <- results %>%
   group_by(X_map, year) %>%
   summarize(total_ct_winner = sum(ct_winner, na.rm = TRUE))
 
-# Adicionando a coluna de uma aproximação da porcentagem vitória do lado ct.
+### Adicionando a coluna de uma aproximação da porcentagem vitória do lado ct.
 for(i in 1:nrow(total_per_map_year)) {
   maps$porcentagem[i] <- as.integer(maps[i, 3]*100/total_per_map_year[i, 3])
 }
 
-# Removendo as linhas em que o Mapa escolhido era dado como "Default"
+### Removendo as linhas em que o Mapa escolhido era dado como "Default"
 maps <- maps[-c(10:14), ]
 ```
 
@@ -223,10 +368,7 @@ Embora os pistols não sejam o fator decisivo em séries individuais, as equipes
 Assim é de bastante interesse para os times conseguirem saber o quão bem os pitols adversários estão, além de ser uma informação bastante útil para possíveis apostadores, mesmo que ganhar pistols de forma consistente possa ser uma tarefa bem difícil.
 
 ```{r analise2}
-economy$date <- ymd(economy$date)
-players$date <- ymd(players$date)
-
-# Dataframe com o nº do vencedor do pistol e o nº do time que venceu.
+### Dataframe com o nº do vencedor do pistol e o nº do time que venceu.
 df <- economy %>%
   gather(key="number_team", value="team", team_1, team_2) %>%
   transmute(team = team,
@@ -237,8 +379,8 @@ df <- economy %>%
 
 attach(df)
 
-# Adicionando uma nova coluna binária, onde 1 representa se o time ganhou o
-# pistol e 0 se perdeu.
+### Adicionando uma nova coluna binária, onde 1 representa se o time ganhou o
+### pistol e 0 se perdeu.
 for(i in 1:nrow(df)) {
   if (X1_winner[i] == number_team[i]) {
     df$result[i] <- 1
@@ -247,13 +389,13 @@ for(i in 1:nrow(df)) {
   }
 }
 
-# Dataframe com a quantidade de jogos e sua taxa de vitória por ano e time
+### Dataframe com a quantidade de jogos e sua taxa de vitória por ano e time
 df <- df %>%
   group_by(team, year) %>%
   summarize(media = mean(result),
             n = n())
 
-# Dataframe com a quantidade de nacionalidade dos jogadores por time e ano.
+### Dataframe com a quantidade de nacionalidade dos jogadores por time e ano.
 country <- players %>%
   transmute(team = team,
             year=year(date),
@@ -261,7 +403,7 @@ country <- players %>%
   group_by(team, year, country) %>%
   summarise(n = n())
 
-# Dataframe para encontrar a nacionalidade do time.
+### Dataframe para encontrar a nacionalidade do time.
 group <- as.data.table(country)
 group <- group[group[, .I[which.max(n)], by=team]$V1] %>%
   select(team, country)
@@ -273,8 +415,8 @@ custom = c("Argentina" = "South America",
            "United States" = "North America",
            "Canada" = "North America")
 
-# Realizando a coluna dos países ao dataframe df e adicionando uma coluna do 
-# continente do país
+### Realizando a coluna dos países ao dataframe df e adicionando uma coluna do 
+### continente do país
 df <- df[df$n > 50,] %>%
   merge(group, by="team",all.x=TRUE) %>%
   mutate(continent = countrycode(sourcevar = country,
@@ -300,26 +442,24 @@ fig
 
 ```
 
-### Mapas mais pickados em partidas MD1
+### Mapas mais escolhidos em partidas MD1
 
 Nas partidas melhores de 1 (MD1), as equipes devem vetar os mapas de maneira alternada até que reste um mapa a ser jogado, onde o lado de ínicio é definido por um round faca. 
 
 Ter o conhecimento sobre os mapas mais escolhidos é bastante essencial para qualquer time do competitivo, já que possivelmente você deverá treiná-los ou então veta-los. Sabendo disso, decidimos fazer uma análise para descobrir quais são os mapas mais jogados em cada ano.
 
 ```{r analise3}
-picks$date <- ymd(picks$date)
-
-# Adicionando uma coluna com o ano dos jogos e excluindo as outras 
-# variáveis, com excessão da best_of e o left_over.
+### Adicionando uma coluna com o ano dos jogos e excluindo as outras 
+### variáveis, com excessão da best_of e o left_over.
 picks <- picks %>%
   transmute(year = year(date),
             best_of = best_of,
             left_over = left_over)
 
-# Vetor com os mapas do jogo
+### Vetor com os mapas do jogo
 map <- c("Cache","Cobblestone","Dust2","Inferno","Mirage","Nuke","Overpass", "Train", "Vertigo")
 
-# Dataframe com apenas as partidas md1, agrupadas pelo ano e mapa escolhido
+### Dataframe com apenas as partidas md1, agrupadas pelo ano e mapa escolhido
 picks_md1 <- picks %>%
   filter(best_of == 1,
          left_over %in% map) %>%
@@ -343,3 +483,5 @@ fig
 [[1]](#ge) [Mercado de eSports: faturamento, audiência e o cenário no Brasil](https://ge.globo.com/sc/noticia/o-mercado-de-esports-faturamento-audiencia-e-o-cenario-no-brasil.ghtml)
 
 [[2]](#ge2) [Top 10 organizações mais valiosas no eSports - 13/04/2021](https://ge.globo.com/esports/stories/2021/04/13/as-10-organizacoes-mais-valiosas-nos-esportes-eletronicos.ghtml)
+
+[[3]](#lpedia) [Resultados - Faze Clan (2016-2022)](https://liquipedia.net/counterstrike/FaZe_Clan/Results)
