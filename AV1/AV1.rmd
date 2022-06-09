@@ -360,7 +360,7 @@ maps_graph <- maps %>%
 maps_graph
 ```
 
-### Times com os Melhores Pistols {#plotly} {#country}
+### Times com os Melhores Pistols {#country}
 
 No CS:GO, a sequência de abertura de cada jogo e lado de mapa é o que é conhecido como pistol round ou pistol. É bastante importante a vitória já que além do ponto ele determina qual time terá um começo com vantagem econômica. 
 
@@ -443,7 +443,7 @@ fig
 
 ```
 
-### Mapas mais escolhidos em partidas MD1
+### Mapas mais escolhidos em partidas MD1 {#plotly}
 
 Nas partidas melhores de 1 (MD1), as equipes devem vetar os mapas de maneira alternada até que reste um mapa a ser jogado, onde o lado de ínicio é definido por um round faca. 
 
@@ -478,6 +478,12 @@ fig <- picks_md1 %>%
 
 fig
 ```
+
+## Conclusão
+
+Mostramos, portanto, que análises de dados conseguem, de forma excelente, sumarizar informações importantes facilitando na busca e uso das mesmas, seja por uma organização, por um jogador, individualmente falando, ou por um time. Como por exemplo, em [Times com os melhores pistol rounds](#country) mostramos quais times tinham a maior quantidade de pistols vencidos: Imagine que você é o coach de um time recém formado no ano de 2018 que está buscando pelo topo; dada a importância dos rounds pistol, como explicado anteriormente, ao buscar por um material de estudo para o seu novo time, você, com essa informação, já terá um direcionamento de quais times você deve assistir demos(gravações de demonstração que permite vizualizar as partidas de outros times), que são neste caso, Astralis, Complexity, Valiance, etc. 
+
+Não só essa, mas todas as outras análises tornam as informações mais claras, dessa forma garantindo que o público-alvo usufrua da melhor maneira possível, e possivelmente obter a melhor tomada de decisão. Assim, como foi dito anteriormente, de fato realizar análise de dados trazendo informações sobre o jogo é importante, já que nos mostram informações que a primeira vista não são simples de se notar.
 
 ## Referências
 
