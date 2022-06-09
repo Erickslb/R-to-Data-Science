@@ -6,9 +6,9 @@ Assignment Codes for Introduction to R applied in Data Science
 
 ### Objetivos
 
-- [ ] Construir análises relevantes
+- [x] Construir análises relevantes
 
-- [ ] Adicionar visualizações interessantes para apresentação
+- [x] Adicionar visualizações interessantes para apresentação
 
 ### Desafios
 
